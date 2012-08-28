@@ -7,15 +7,9 @@ rclient.select(13);
 
 var restify = require('restify');
 
-var helpers = {
-    GET : function(x){ return x === "GET"; }
-  , POST : function(x){ return x === "POST"; }
-  , PUT : function(x){ return x === "PUT"; }
-}
-
 function pop(req, res, next){
     var key = req.params.queue.replace('/', '_');
-    rclient.RPOP(key, function(err, reply){
+    rclient.BRPOP(key, function(err, reply){
         if(err){ res.status(500); res.end(err); }
 
         if(reply){
@@ -42,8 +36,8 @@ function push(req, res, next){
 }
 
 var server = restify.createServer();
-server.get(':queue', pop);
-server.put(':queue', push);
+server.get('/:queue', pop);
+server.put('/:queue', push);
 
 console.log("About to listen on port 8080");
 server.listen(8080);

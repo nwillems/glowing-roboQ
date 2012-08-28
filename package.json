@@ -1,0 +1,20 @@
+{
+  "name": "Glowing-roboQ",
+  "version": "0.1.0",
+  "description": "A SIMPLE message queue",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nwillems/glowing-roboQ.git"
+  },
+  "author": "Nicolai Willems",
+  "license": "MIT",
+  "dependencies": {
+    "redis": "~0.7.2",
+    "hiredis": "~0.1.14",
+    "restify": "~1.4.4"
+  }
+}

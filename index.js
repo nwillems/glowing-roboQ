@@ -1,24 +1,40 @@
 var redis = require('redis');
-var rclient = redis.createClient();
+var request = require('request');
+
 
 // Initializing redis client
 //
+var rclient = redis.createClient();
 rclient.select(13);
 
 var restify = require('restify');
 
-function pop(req, res, next){
-    var key = req.params.queue.replace('/', '_');
-    rclient.BRPOP(key, function(err, reply){
-        if(err){ res.status(500); res.end(err); }
+function readyClient(req, res, next){
+    var queue = req.params.queue.replace('/', '_');
+    var cb = req.header('roboq-callback');
+    
+    if(cb.substring(0, 6) !== 'http://'){
+        res.status(400);
+        res.end("CB NOT HTTP");
+        return;
+    }
+    
+    res.status(200);
+    res.end("DONE "+queue+);
 
-        if(reply){
-            res.status(200);
-            res.end(reply);
-        }else{
-            //Do something timeout ish
-            setTimeout(function(){ pop(req, res, next); }, 100);
-        }
+    process.nextTick(function(){
+        rclient.BRPOP(queue, function(err, reply){
+            if(err){ 
+                // TODO:  Do something error-ish
+            }
+
+            if(reply){
+                request.({ method: 'POST', uri: cb, body: reply}, function(err, resp, body){
+                    //TODO: Something about handling errors
+
+                });
+            }else { /* Do something about faulty answers  */ }
+        }); 
     });
 }        
 
@@ -36,9 +52,9 @@ function push(req, res, next){
 }
 
 var server = restify.createServer();
-server.get('/:queue', pop);
+server.get('/:queue', readyClient);
 server.put('/:queue', push);
 
-console.log("About to listen on port 8080");
-server.listen(8080);
+console.log("About to listen on port 4568");
+server.listen(4568);
 console.log("Should now be listening");
